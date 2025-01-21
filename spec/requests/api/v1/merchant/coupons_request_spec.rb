@@ -25,7 +25,7 @@ RSpec.describe "Merchant Coupon endpoints" do
   
   describe "#INDEX" do 
     it "should return all of a merchant's coupons" do
-      get "/api/v1/merchants/#{@merchant1.id}/coupons"
+      get api_v1_merchant_coupons_path(@merchant1.id)
 
       coupons = JSON.parse(response.body, symbolize_names: true)
 
@@ -43,7 +43,7 @@ RSpec.describe "Merchant Coupon endpoints" do
     end
 
     it "returns a not found status when there are no coupons for the merchant" do
-      get "/api/v1/merchants/#{@merchant3.id}/coupons"
+      get api_v1_merchant_coupons_path(@merchant3.id)
 
       coupons = JSON.parse(response.body, symbolize_names: true)
 
@@ -85,7 +85,7 @@ RSpec.describe "Merchant Coupon endpoints" do
       end
 
       it "if an invalid status is provided it returns no coupons" do
-        get "/api/v1/merchants/#{@merchant1.id}/coupons?status=nonexistentstatus"
+        get api_v1_merchant_coupons_path(@merchant3.id, status: 'nonexistentstatus')
         
         json = JSON.parse(response.body, symbolize_names: true)
 
@@ -97,8 +97,7 @@ RSpec.describe "Merchant Coupon endpoints" do
 
   describe "#SHOW" do
     it 'returns a specific coupon with a count of how many times coupon has been used' do
-      get "/api/v1/merchants/#{@merchant1.id}/coupons/#{@coupon1.id}"
-
+      get api_v1_merchant_coupon_path(@merchant1.id, @coupon1.id)
       expect(response).to be_successful
       expect(response.status).to eq(200)
 
@@ -115,7 +114,7 @@ RSpec.describe "Merchant Coupon endpoints" do
     end
 
     it 'displays error when coupon does not exist' do
-      get "/api/v1/merchants/#{@merchant1.id}/coupons/999999999"
+      get api_v1_merchant_coupon_path(@merchant1.id, 999999999)
 
       expect(response.status).to eq(404)
 
@@ -132,9 +131,8 @@ RSpec.describe "Merchant Coupon endpoints" do
     it "creates a new coupon for a merchant" do
       new_coupon_params = { name: "Employee discount", code: "EMPL25", percent_off: 25}
       headers = { "CONTENT_TYPE" => "application/json" }
-      # We include this header to make sure that these params are passed as JSON rather than as plain text
 
-      post "/api/v1/merchants/#{@merchant1.id}/coupons/", headers: headers, params: JSON.generate(coupon: new_coupon_params)
+      post api_v1_merchant_coupons_path(@merchant1.id), headers: headers, params: JSON.generate(coupon: new_coupon_params)
 
       expect(response).to be_successful
 
@@ -149,7 +147,7 @@ RSpec.describe "Merchant Coupon endpoints" do
       new_coupon_params = { coupon: { name: '', code: '', percent_off: nil, dollar_off: nil } }
       headers = { "CONTENT_TYPE" => "application/json" }
 
-      post "/api/v1/merchants/#{@merchant1.id}/coupons/", headers: headers, params: JSON.generate(coupon: new_coupon_params)
+      post api_v1_merchant_coupons_path(@merchant1.id), headers: headers, params: JSON.generate(coupon: new_coupon_params)
 
       expect(response.status).to eq(422)
 
@@ -184,8 +182,6 @@ RSpec.describe "Merchant Coupon endpoints" do
 
       expect(JSON.parse(response.body)).to eq(expected_error)
     end
-
-
   end
 
   describe "#PATCH deactivate" do
